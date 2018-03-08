@@ -1,4 +1,7 @@
-## preprocess-loader for webpack
+## advanced-preprocess-loader for webpack
+
+
+*This is fork of [preprocess-loader](https://github.com/dearrrfish/preprocess-loader)*
 
 > [Webpack](https://webpack.github.io) loader uses [preprocess](https://github.com/jsoverson/preprocess) to preprocess HTML, Javascript, and other module files based on custom or environment configurations.
 > 
