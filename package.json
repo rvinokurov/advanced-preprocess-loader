@@ -25,6 +25,7 @@
         "url": "https://github.com/dearrrfish/preprocess-loader/issues"
     },
     "devDependencies": {
+        "@types/node": "^9.4.7",
         "coffee-script": "^1.12.6",
         "typescript": "^2.7.2",
         "uglify-js": "^3.0.11"
