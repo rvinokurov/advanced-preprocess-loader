@@ -1,5 +1,5 @@
 {
-    "name": "preprocess-loader",
+    "name": "advanced-preprocess-loader",
     "description": "preprocess loader module for webpack",
     "version": "0.2.2",
     "homepage": "https://github.com/dearrrfish/preprocess-loader",
