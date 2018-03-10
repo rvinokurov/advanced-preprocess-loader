@@ -1,7 +1,7 @@
-"use strict";
-var loader = function (content) {
+const loader = function (content) {
     this.cachable && this.cachable();
     console.log(this.resourcePath);
     return content;
 };
-module.exports = loader;
+
+export = loader;

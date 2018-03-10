@@ -26,6 +26,7 @@
     },
     "devDependencies": {
         "coffee-script": "^1.12.6",
+        "typescript": "^2.7.2",
         "uglify-js": "^3.0.11"
     }
 }
