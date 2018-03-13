@@ -13,7 +13,7 @@
     },
     "license": "MIT",
     "dependencies": {
-        "loader-utils": "^1.0.0",
+        "loader-utils": "^1.1.0",
         "lodash": "^3.10.1",
         "mkdirp": "^0.5.1",
         "preprocess": "^3.0.2"
