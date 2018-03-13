@@ -1,14 +1,14 @@
 import * as path from 'path';
-import * as fs from 'fs';
 import * as process from 'process';
 import * as crypto from 'crypto';
 import * as pp from 'preprocess';
 import * as loaderUtils from 'loader-utils';
-import {isObject, merge, uniq, compact} from 'lodash';
+import {isObject, merge, uniq, compact, trim, isFunction} from 'lodash';
 import * as webpack from 'webpack';
+import * as mkdirp from 'mkdirp';
+import * as fs from 'fs';
 import LoaderContext = webpack.loader.LoaderContext;
 import {OptionObject} from 'loader-utils';
-
 const
   algorithm = 'sha1',
   encoding = 'utf8',
@@ -20,18 +20,33 @@ const
       .update(inputString, encoding)
       .digest(outputEncoding);
   },
-
-  getTouchedFiles = (ppLogFile: string): string[] => {
-    try {
-      return compact(fs.readFileSync(ppLogFile, encoding).split("\n"));
-    } catch (e) {
-      return [];
-    }
-  },
-
-  saveTouchedFiles = (ppLogFile: string, touchedFiles: string[]) : void =>  {
-    fs.writeFileSync(ppLogFile, touchedFiles.join("\n"));
+  md5 = (inputString: string): string => {
+    return crypto
+      .createHash('md5')
+      .update(inputString, encoding)
+      .digest(outputEncoding);
   };
+
+const createCacheFile = (directory: string, resourcePath: string) : void => {
+  mkdirp(directory, (error) => {
+    if(error) {
+      console.error(error);
+    } else {
+      fs.writeFile(
+        path.join(directory, md5(resourcePath)),
+        '',
+        {encoding},
+        (error) => {
+          if(error) {
+            console.error(error);
+          } else {
+            // console.log('write', resourcePath);
+          }
+      });
+    }
+  })
+};
+
 
 const loader = function (this: LoaderContext, content: string): void {
   this.cacheable && this.cacheable();
@@ -42,11 +57,11 @@ const loader = function (this: LoaderContext, content: string): void {
     this.callback(null, content);
     return;
   }
+  content = trim(content);
 
   const
     extension = path.extname(this.resourcePath).substring(1),
-    sourceChecksum = checksum(content),
-    touchedFiles = [];
+    sourceChecksum = checksum(content);
 
   let options = {
       srcDir: this.context,
@@ -54,25 +69,22 @@ const loader = function (this: LoaderContext, content: string): void {
     },
     query: OptionObject = loaderUtils.getOptions(this) || {};
 
+  const {preprocessCache} = query;
+
   if (isObject(query.ppOptions)) {
     options = merge(options, query.ppOptions);
-    delete query.ppOptions;
   }
 
-  if (typeof query.ppLogFile === 'string') {
-    touchedFiles.push(...getTouchedFiles(query.ppLogFile));
-  }
-
-  const context = merge({}, process.env, query);
+  const context = merge({}, process.env, query.context || {});
   context.NODE_ENV = context.NODE_ENV || 'development';
 
-  let processed: string = pp.preprocess(content, context, options);
+  let processed: string = trim(pp.preprocess(content, context, options));
 
   const processedChecksum = checksum(processed);
 
-  if (typeof query.ppLogFile === 'string' && sourceChecksum !== processedChecksum) {
-    touchedFiles.push(resourcePath);
-    saveTouchedFiles(query.ppLogFile, uniq(touchedFiles));
+  if (sourceChecksum !== processedChecksum && typeof preprocessCache === 'string' && preprocessCache.length) {
+    // console.log(resourcePath);
+    createCacheFile(preprocessCache, resourcePath);
   }
 
   this.callback(null, processed);
